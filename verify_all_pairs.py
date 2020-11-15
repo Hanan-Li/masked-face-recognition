@@ -84,13 +84,13 @@ def get_embeddings(directory, batch_size, device, epochs, workers, saved_model):
         batch_size=batch_size,
         sampler=SequentialSampler(dataset)
     )
-    resnet = InceptionResnetV1(
-        classify=False,
-        pretrained='vggface2'
-    ).to(device)
-    # resnet = InceptionResnetV1(classify=False)
-    # resnet.load_state_dict(torch.load(saved_model, map_location=device), strict=False)
-    # resnet.to(device)
+    # resnet = InceptionResnetV1(
+    #     classify=False,
+    #     pretrained='vggface2'
+    # ).to(device)
+    resnet = InceptionResnetV1(classify=False)
+    resnet.load_state_dict(torch.load(saved_model, map_location=device), strict=False)
+    resnet.to(device)
 
     classes = []
     embeddings = []

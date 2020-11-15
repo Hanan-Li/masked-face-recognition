@@ -1,3 +1,5 @@
 lfw_complete/
 AFDB_face_dataset/
 AFDB_masked_face_dataset/
+saved_models/
+__pycache__/

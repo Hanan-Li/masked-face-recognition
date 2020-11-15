@@ -1,6 +1,8 @@
 fix stuff
 
 Project Directory:
+
+Note, some folders mightve been gitignored
 image_comparison/
     Contains statistics and examples for facial verification for pairwise evaluation for each pair in mixed_face_dataset_subset
 lfw_complete/
@@ -30,3 +32,6 @@ validate_lfw.py
 
 verify_all_pairs.py
     Count every single pair in mixed_face_dataset as a data point, generate validation statistics on our models
+
+Face_verification_one_shot.py
+    Experiment with face verification on tensorflow

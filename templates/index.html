@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <title>MaskVerify</title>
+    </head>
+
+    <body>
+        <div class="intro" id="intro">
+            <h1>Title here</h1>
+            <p>Some content</p>
+        </div>
+
+        <div class="upload1" id="uploadpic1">
+            <h2>Upload pic</h2>
+            <form action="/upload1" method="POST" name="picForm1" enctype="multipart/form-data" onsubmit="return checkUpload()">
+                <div class="upload-tab">
+                    <input type="file" id="inputfile1" name="inputfile1" hidden>
+                    <label class="selectBtn1" for="inputfile1" id="selectBtn1">Click to select unmasked pic</label>
+
+                    <input type="submit" id="upload-btn1" hidden>
+                    <label for="upload-btn1">Upload1</label><br>
+                </div>
+
+            </form>
+        </div>
+
+        <br>
+        <div class="upload2" id="uploadpic2">
+            <form action="/upload2" method="POST" name="picForm2" enctype="multipart/form-data">
+                <div class="upload-tab">
+                    <input type="file" id="inputfile2" name="inputfile2" hidden>
+                    <label class="selectBtn2" for="inputfile2" id="selectBtn2">Click to select masked pic</label>
+
+                    <input type="submit" id="upload-btn2" hidden>
+                    <label for="upload-btn2">Upload2</label><br>
+                </div>
+
+            </form>
+        </div>
+
+        <br>
+        <div class="aba">
+            <form name="form" action="/verify" method="get", enctype="multipart/form-data">
+                <p>Model Selection</p>
+                <select id="model" name="model">
+                    <option value=1>model1</option>
+                    <option value=2>model2</option>
+                    <option value=3>model3</option>
+                </select>
+                <button type="submit" class="button_new" >Start verification</button>
+            </form>
+        </div>
+
+        <div class="test">
+            <p>test <br>{{file1path}} <br> {{file2path}}</p>
+        </div>
+
+    </body>
+</html>

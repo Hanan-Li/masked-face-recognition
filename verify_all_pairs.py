@@ -5,6 +5,7 @@ from torch import optim
 from torch.optim.lr_scheduler import MultiStepLR
 from torch.utils.tensorboard import SummaryWriter
 from torchvision import datasets, transforms
+from tripletdataset import TripletImageLoader
 from PIL import Image
 import numpy as np
 import random
@@ -60,7 +61,8 @@ def read_data(directory, batch_size, device, epochs, workers):
 
     for i, (x, b_paths) in enumerate(loader):
         crops = [p.replace(directory, directory + '_cropped') for p in b_paths]
-    
+        boxes, probs = mtcnn.detect(x)
+        # print(boxes)
         # mtcnn(x, save_path=crops)
         
         crop_paths.extend(crops)
@@ -69,14 +71,13 @@ def read_data(directory, batch_size, device, epochs, workers):
     del mtcnn
     torch.cuda.empty_cache()
 
-def get_embeddings(directory, batch_size, device, epochs, workers, saved_model):
+def get_embeddings(directory, batch_size, device, epochs, workers, saved_model, dataset):
     trans = transforms.Compose([
         np.float32,
         transforms.ToTensor(),
         fixed_image_standardization
     ])
 
-    dataset = datasets.ImageFolder(directory, transform=trans)
 
     embed_loader = DataLoader(
         dataset,
@@ -84,26 +85,37 @@ def get_embeddings(directory, batch_size, device, epochs, workers, saved_model):
         batch_size=batch_size,
         sampler=SequentialSampler(dataset)
     )
-    # resnet = InceptionResnetV1(
-    #     classify=False,
-    #     pretrained='vggface2'
-    # ).to(device)
-    resnet = InceptionResnetV1(classify=False)
-    resnet.load_state_dict(torch.load(saved_model, map_location=device), strict=False)
-    resnet.to(device)
 
-    classes = []
+    resnet = InceptionResnetV1(classify=False)
+    if saved_model == "":
+        resnet = InceptionResnetV1(
+            classify=False,
+            pretrained='vggface2'
+        ).to(device)
+    else:
+        resnet.load_state_dict(torch.load(saved_model, map_location=device), strict=False)
+        resnet.to(device)
+    classification = []
     embeddings = []
     crop_paths = []
     resnet.eval()
     with torch.no_grad():
-        for xb, yb in embed_loader:
-            xb = xb.to(device)
-            b_embeddings = resnet(xb)
-            b_embeddings = b_embeddings.to('cpu').numpy()
-            classes.extend(yb.numpy())
-            embeddings.extend(b_embeddings)
-    return classes, embeddings
+        for idx, (anchor, positive, negative) in enumerate(embed_loader):
+            # print(idx)
+            anchor = anchor.to(device)
+            positive = positive.to(device)
+            negative = negative.to(device)
+            anchor_embeddings = resnet(anchor)
+            anchor_embeddings = anchor_embeddings.to('cpu').numpy()
+            positive_embeddings = resnet(positive)
+            positive_embeddings = positive_embeddings.to('cpu').numpy()
+            negative_embeddings = resnet(negative)
+            negative_embeddings = negative_embeddings.to('cpu').numpy()
+            embeddings.append([anchor_embeddings, positive_embeddings])
+            embeddings.append([anchor_embeddings, negative_embeddings])
+            classification.append(1)
+            classification.append(0)
+    return classification, embeddings
 
 def distance(embeddings1, embeddings2, distance_metric=0):
     if distance_metric==0:
@@ -121,8 +133,8 @@ def distance(embeddings1, embeddings2, distance_metric=0):
 
     return dist
 
-def get_stats(classes, embeddings, threshold):
-    total_pairs = 0
+def get_stats(classification, embeddings, threshold):
+    total_pairs = len(classification)
     tp = 0
     fp = 0
     tn = 0
@@ -131,23 +143,18 @@ def get_stats(classes, embeddings, threshold):
     fp_pairs = []
     tn_pairs = []
     fn_pairs = []
-    for idx1, embedding1 in enumerate(embeddings):
-        for idx2, embedding2 in enumerate(embeddings):
-            if idx1 != idx2:
-                total_pairs += 1
-                dist = distance(embedding1, embedding2)
-                if dist < threshold and classes[idx1] == classes[idx2]:
-                    tp += 1
-                    tp_pairs.append((idx1, idx2))
-                elif dist < threshold and classes[idx1] != classes[idx2]:
-                    fp += 1
-                    fp_pairs.append((idx1, idx2))
-                elif dist > threshold and classes[idx1] != classes[idx2]:
-                    tn += 1
-                    tn_pairs.append((idx1, idx2))
-                else:
-                    fn += 1
-                    fn_pairs.append((idx1, idx2))
+    for idx, embed_pairs in enumerate(embeddings):
+        embeddings1 = embed_pairs[0]
+        embeddings2 = embed_pairs[1]
+        dist = distance(embeddings1, embeddings2)
+        if dist <= threshold and classification[idx] == 1:
+            tp += 1
+        elif dist > threshold and classification[idx] == 0:
+            tn += 1
+        elif dist <= threshold and classification[idx] == 0:
+            fp += 1
+        elif dist > threshold and classification[idx] == 1:
+            fn += 1
     return tp, fp, tn, fn, tp_pairs, fp_pairs, tn_pairs, fn_pairs
 
 def sample(pair_list, crop_paths, classes, num_examples):
@@ -165,51 +172,68 @@ def sample(pair_list, crop_paths, classes, num_examples):
 
     plt.show()
 
+def run_test(directory, batch_size, device, epochs, workers, saved_model, dataset):
+    print(saved_model)
+    classes, embeddings = get_embeddings(directory, batch_size, device, epochs, workers, saved_model, dataset)
+    precision_list = []
+    recall_list = []
+    accuracy_list = []
+    for threshold in thresholds:
+        tp, fp, tn, fn, tp_pairs, fp_pairs, tn_pairs, fn_pairs = get_stats(classes, embeddings, threshold)
+        precision = tp / (tp + fp)
+        recall = tp / (tp + fn)
+        accuracy = (tp + tn) / (tp + fp + tn + fn)
+        print("threshold: ", threshold)
+        print("precision: ", precision)
+        print("recall: ", recall)
+        print("accuracy: ", accuracy)
+        print("\n")
+        precision_list.append(precision)
+        recall_list.append(recall)
+        accuracy_list.append(accuracy)
+    model_name = "Base Pretrained"
+    if saved_model == "saved_models/lfw_mask_triplet":
+        model_name = "Transfer Learning Model on LFW"
+    elif saved_model == "saved_models/AFDB_subset_non_triplet":
+        model_name = "Transfer Learning Model on Real World Masked"
+    elif saved_model == "saved_models/AFDB_subset_triplet":
+        model_name = "Transfer Learning Model on Real World Masked with Triplet"
+    plt.plot(recall_list, precision_list, 'r')
+    plt.xlabel("Recall")
+    plt.ylabel("Precision")
+    plt.title("Precision Recall Curve for " + model_name)
+    plt.show()
+
+    plt.plot(thresholds, accuracy_list, 'r', label="Base Pretrained Trained Model")
+    plt.xlabel("thresholds")
+    plt.ylabel("Accuracy")
+    plt.title("Accuracy for " + model_name)
+    plt.show()
+    print("\n")
+    print("\n")
 
 if __name__ == "__main__":
     directory = sys.argv[1]
     batch_size = 1
     epochs = 15
-    thresholds = np.arange(0.1, 2, 0.1)
+    thresholds = np.arange(0.1, 1.1, 0.1)
     
-    saved_model = "saved_models/AFDB_subset_non_triplet"
+    saved_model = "saved_models/lfw_mask_triplet"
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     # device = torch.device('cpu')
     workers = 0 if os.name == 'nt' else 8
     print('Running on device: {}'.format(device))
     print(directory)
     # read_data(directory, batch_size, device, epochs, workers)
-    crop_paths = get_paths(directory, batch_size, device, epochs, workers)
-    classes, embeddings = get_embeddings(directory, batch_size, device, epochs, workers, saved_model)
+    trans = transforms.Compose([
+        np.float32,
+        transforms.ToTensor(),
+        fixed_image_standardization
+    ])
+    orig_dataset = datasets.ImageFolder(directory, transform = trans)
+    dataset = TripletImageLoader(orig_dataset, train = False)
+    run_test(directory, batch_size, device, epochs, workers, "", dataset)
+    run_test(directory, batch_size, device, epochs, workers, "saved_models/lfw_mask_triplet", dataset)
+    run_test(directory, batch_size, device, epochs, workers, "saved_models/AFDB_subset_non_triplet", dataset)
+    run_test(directory, batch_size, device, epochs, workers, "saved_models/AFDB_subset_triplet", dataset)
     
-    tp, fp, tn, fn, tp_pairs, fp_pairs, tn_pairs, fn_pairs = get_stats(classes, embeddings, 0.6)
-    precision = tp / (tp + fp)
-    recall = tp / (tp + fn)
-    accuracy = (tp + tn) / (tp + fp + tn + fn)
-    print("threshold: ", 0.6)
-    print("precision: ", precision)
-    print("recall: ", recall)
-    print("accuracy: ", accuracy)
-    print("\n")
-
-    print("True Positive")
-    sample(tp_pairs, crop_paths, classes, 5)
-    
-    print("False Positive")
-    sample(fp_pairs, crop_paths, classes, 5)
-
-    print("True Negative")
-    sample(tn_pairs, crop_paths, classes, 5)
-
-    print("False Negative")
-    sample(fn_pairs, crop_paths, classes, 5)
-    # for threshold in thresholds:
-    #     tp, fp, tn, fn, tp_pairs, fp_pairs, tn_pairs, fn_pairs = get_stats(classes, embeddings, threshold)
-    #     precision = tp / (tp + fp)
-    #     recall = tp / (tp + fn)
-    #     accuracy = (tp + tn) / (tp + fp + tn + fn)
-    #     print("threshold: ", threshold)
-    #     print("precision: ", precision)
-    #     print("recall: ", recall)
-    #     print("accuracy: ", accuracy)
-    #     print("\n")

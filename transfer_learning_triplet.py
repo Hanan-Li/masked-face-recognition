@@ -50,7 +50,7 @@ def val_epoch(val_loader, resnet, device, loss_fn, optimizer, scheduler):
     return loss
 
 if __name__ == "__main__":
-    data_dir = 'mixed_face_dataset_subset/'
+    data_dir = 'lfw_complete\lfw_cropped'
 
     batch_size = 32
     epochs = 20
@@ -98,7 +98,7 @@ if __name__ == "__main__":
     for epoch in range(epochs):
         print('\nEpoch {}/{}'.format(epoch + 1, epochs))
         print('-' * 10)
-
+        PATH = 'saved_models/lfw_checkpoint_' + str(epoch)
         resnet.train()
         train_loss_epoch = train_epoch(train_loader, resnet, device, loss_fn, optimizer, scheduler)
         train_loss.append(train_loss_epoch)
@@ -106,7 +106,17 @@ if __name__ == "__main__":
         resnet.eval()
         test_loss_epoch = val_epoch(val_loader, resnet, device, loss_fn, optimizer, scheduler)
         test_loss.append(test_loss_epoch)
-    
-
-    PATH = "saved_models/AFDB_subset_triplet"
+        if epoch % 5 == 0:
+            torch.save({
+                'epoch': epoch,
+                'model_state_dict': resnet.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'loss': train_loss_epoch,
+                'test_loss': test_loss_epoch
+            }, PATH)
+    print(train_loss)
+    print(test_loss)
+    PATH = "saved_models/lfw_mask_triplet"
     torch.save(resnet.state_dict(), PATH)
+
+    

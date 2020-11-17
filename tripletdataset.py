@@ -74,9 +74,9 @@ class TripletImageLoader(Dataset):
                 neg_img = self.transform(neg_img)
             return anchor_img, pos_img, neg_img
 
-
     def __len__(self):
         return len(self.imgs)
+
 
 class TripletLFWImageLoader(Dataset):
     def __init__(self, image_dataset, train = False):
@@ -120,7 +120,6 @@ class TripletLFWImageLoader(Dataset):
                     neg_label = np.random.choice(self.class_idx)
                 neg_index = np.random.choice(self.class_idx_to_idx[neg_label])
                 self.test_triplets.append([pos_index, neg_index])
-
 
     def __getitem__(self, index):
         if self.train:

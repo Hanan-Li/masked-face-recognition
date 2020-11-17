@@ -46,8 +46,8 @@ def verify():
         # result from 2 pics and model number
         result = '' + file1path + 'and' + file2path + '\nmodel=' + model
         # delete files uploaded
-        cleanUpPic()
-        return render_template('result.html', result=result)
+
+        return render_template('result.html', result=result, file1path=('/files/' + file1path.split('\\')[-1]), file2path=file2path)
     except Exception as e:
         print(e)
         return "??"
@@ -62,7 +62,9 @@ def cleanUpPic():
                 print('aba')
         except Exception as e:
             print('Failed to delete %s. Reason: %s' % (file_path, e))
-            
+
 
 if __name__ == '__main__':
-   app.run()
+    ondebug = True
+    # ondebug = False
+    app.run(debug=ondebug)

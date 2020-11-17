@@ -3,44 +3,55 @@
     <head>
         <meta charset="utf-8">
         <title>MaskVerify</title>
+        <link rel="stylesheet" href="../static/css/index.css">
     </head>
 
     <body>
         <div class="intro" id="intro">
-            <h1>Title here</h1>
-            <p>Some content</p>
+            <h1>Mask Verification</h1>
+            <p>Upload two pictures containing human face, one wearing a mask while the other does not. We will try to tell if they are the same person.</p>
         </div>
 
         <div class="upload1" id="uploadpic1">
-            <h2>Upload pic</h2>
-            <form action="/upload1" method="POST" name="picForm1" enctype="multipart/form-data" onsubmit="return checkUpload()">
+            <h2>Upload pictures</h2>
+            <form action="/upload1" method="POST" name="picForm1" enctype="multipart/form-data">
                 <div class="upload-tab">
-                    <input type="file" id="inputfile1" name="inputfile1" hidden>
-                    <label class="selectBtn1" for="inputfile1" id="selectBtn1">Click to select unmasked pic</label>
-
+                    <input type="file" class="inputfile" id="inputfile1" name="inputfile1" accept="image/*" οnchange="readURL(this);" placeholder="Click to select unmasked pic">
+                    <!-- <label class="selectBtn1" for="inputfile1" id="selectBtn1" ">Click to select unmasked pic</label> -->
+                    <br><br>
                     <input type="submit" id="upload-btn1" hidden>
-                    <label for="upload-btn1">Upload1</label><br>
+                    <label for="upload-btn1" class="upload-btn">Upload</label><br>
+                    <!-- <img id="pic1view" src="" alt=""> -->
+
                 </div>
 
             </form>
+            <!-- <div id="preview">
+                <img src="" alt="" id="imghead5" height="200" width="200" />
+            </div> -->
         </div>
 
         <br>
         <div class="upload2" id="uploadpic2">
             <form action="/upload2" method="POST" name="picForm2" enctype="multipart/form-data">
                 <div class="upload-tab">
-                    <input type="file" id="inputfile2" name="inputfile2" hidden>
-                    <label class="selectBtn2" for="inputfile2" id="selectBtn2">Click to select masked pic</label>
-
+                    <input type="file" class="inputfile" id="inputfile2" name="inputfile2" accept="image/*" placeholder="Select masked pic">
+                    <!-- <label class="selectBtn2" for="inputfile2" id="selectBtn2">Click to select masked pic</label> -->
+                    <br><br>
                     <input type="submit" id="upload-btn2" hidden>
-                    <label for="upload-btn2">Upload2</label><br>
+                    <label for="upload-btn2" class="upload-btn">Upload</label><br>
                 </div>
 
             </form>
         </div>
 
-        <br>
-        <div class="aba">
+        <div class="preview">
+            <img src={{file1path}} alt="">
+            <img src="{{file2path}}" alt="">
+        </div>
+
+        <br><br>
+        <div class="modelselect">
             <form name="form" action="/verify" method="get", enctype="multipart/form-data">
                 <p>Model Selection</p>
                 <select id="model" name="model">
@@ -57,4 +68,22 @@
         </div>
 
     </body>
+
+    <script type="text/javascript">
+        function readURL(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    $('#blah')
+                        .attr('src', e.target.result)
+                        .width(150)
+                        .height(200);
+                };
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+
 </html>

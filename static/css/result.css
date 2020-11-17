@@ -1,0 +1,48 @@
+* {
+    scroll-behavior: smooth;
+    margin: 0;
+	padding: 0;
+	border: 0;
+    vertical-align: baseline;
+    max-width:100%;
+}
+
+/* body {background-color: yellow} */
+
+
+
+p {
+    position: relative;
+    width: 580px;
+    height: 54px;
+    margin: 43px 122px 0;
+
+    font-family: Poppins;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 18px;
+    line-height: 27px;
+    /* text-transform: capitalize; */
+    z-index: 1;
+    color: #828282;
+}
+
+form label {
+    position: relative;
+    width: 80px;
+    height: 28px;
+    left: 150px;
+    margin-top: 29px;
+    background: #F3705A;
+    border-radius: 28px;
+    color: #fff;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    font-family: Poppins;
+    font-style: normal;
+    font-weight: bold;
+
+    text-transform: capitalize;
+}

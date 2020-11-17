@@ -3,8 +3,16 @@
     <head>
         <meta charset="utf-8">
         <title>Result</title>
+        <link rel="stylesheet" href="../static/css/result.css">
     </head>
     <body>
+        <img src={{file1path}} alt="">
+        <img src="{{file2path}}" alt="">
+
         <p>The result is <br> {{result}}</p>
+        <form class="" action="/">
+            <input type="submit" id="upload-btn1" hidden>
+            <label for="upload-btn1" class="upload-btn">back</label><br>
+        </form>
     </body>
 </html>

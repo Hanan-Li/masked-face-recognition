@@ -1,0 +1,183 @@
+* {
+    scroll-behavior: smooth;
+    margin: 0;
+	padding: 0;
+	border: 0;
+    vertical-align: baseline;
+    max-width:100%;
+}
+
+/* body {background-color: yellow} */
+
+.intro {
+    position: relative;
+    height: 40vh;
+    margin: 0 auto;
+    text-align: left;
+}
+
+/* .upload1 {
+    position: relative;
+    height: 20vh;
+    margin: 0 auto;
+    text-align: left;
+} */
+
+
+div form {
+    position: relative;
+    height: 20vh;
+    margin: 0 auto;
+    text-align: left;
+}
+
+
+p {
+    position: relative;
+    width: 580px;
+    height: 54px;
+    margin: 43px 122px 0;
+
+    font-family: Poppins;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 18px;
+    line-height: 27px;
+    /* text-transform: capitalize; */
+    z-index: 1;
+    color: #828282;
+}
+
+h1 {
+    position: relative;
+    width: 605px;
+    height: 80px;
+    margin: 0 122px;
+    padding-top: 122px;
+
+    font-family: Poppins;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 64px;
+    line-height: 79px;
+    text-transform: capitalize;
+    z-index: 1;
+    color: #333333;
+}
+
+h2 {
+    position: relative;
+    width: 605px;
+    height: 50px;
+    margin: 0 122px;
+    /* padding-top: 122px; */
+
+    font-family: Poppins;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 48px;
+    line-height: 79px;
+    text-transform: capitalize;
+    z-index: 1;
+    color: #333333;
+}
+
+
+
+div > form .upload-btn{
+    display: block;
+    border: 1px solid black;
+    position: absolute;
+    width: 256px;
+    height: 24px;
+    left: 100px;
+    margin-top: 109px;
+    /* margin: 0 122px; */
+    background: #F3705A;
+    border-radius: 28px;
+    color: #fff;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    font-family: Poppins;
+    font-style: normal;
+    font-weight: bold;
+
+}
+
+div > form label {
+    display: block;
+    color: green;
+    border: 1px solid black;
+    position: absolute;
+    width: 280px;
+    height: 24px;
+    left: 100px;
+    margin-top: 109px;
+    background: white;
+    border-radius: 28px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    font-family: Poppins;
+    font-style: normal;
+    font-weight: bold;
+
+    text-transform: capitalize;
+}
+
+div > form .inputfile {
+    display: block;
+    color: green;
+    border: 1px solid black;
+    position: absolute;
+    width: 280px;
+    height: 24px;
+    left: 100px;
+    margin-top: 109px;
+    background: white;
+    border-radius: 28px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    font-family: Poppins;
+    font-style: normal;
+    font-weight: bold;
+
+    text-transform: capitalize;
+}
+
+
+.modelselect form button {
+    position: relative;
+    width: 189px;
+    height: 56px;
+    left: 150px;
+    margin-top: 29px;
+    background: #F3705A;
+    border-radius: 28px;
+    color: #fff;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    font-family: Poppins;
+    font-style: normal;
+    font-weight: bold;
+
+    text-transform: capitalize;
+}
+
+.modelselect form select {
+    width: 200px;
+    height: 32px;
+    font-size: 16px;
+    font-family: Poppins;
+    border: 1px solid #4F4F4F;
+    background-color: #fff;
+    color: #4F4F4F;
+    margin: 0 122px 0;
+}

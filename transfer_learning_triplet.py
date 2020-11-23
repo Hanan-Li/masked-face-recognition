@@ -9,6 +9,41 @@ from tripletdataset import TripletImageLoader
 import numpy as np
 import os
 
+def crop_images(directory, batch_size, device, workers):
+    orig_img_ds = datasets.ImageFolder(directory, transform = None)
+    orig_img_ds.samples = [
+        (p, p)
+        for p, _ in orig_img_ds.samples
+    ]
+    mtcnn = MTCNN(
+        image_size=160,
+        margin=14,
+        device=device,
+        selection_method='center_weighted_size'
+    )
+    # img = Image.open("C:\\Users\\david\\Documents\\masked-face-recognition\\team_pictures\\hanan_pics\\me_5.jpg")
+    # boxes, probs = mtcnn.detect(img)
+    # print(boxes)
+    loader = DataLoader(
+        orig_img_ds,
+        num_workers=workers,
+        batch_size=batch_size,
+        collate_fn=training.collate_pil
+    )
+    crop_paths = []
+    box_probs = []
+
+    for i, (x, b_paths) in enumerate(loader):
+        crops = [p.replace(directory, directory + '_cropped') for p in b_paths]
+        boxes, probs = mtcnn.detect(x)
+        # print(boxes)
+        mtcnn(x, save_path=crops)
+        crop_paths.extend(crops)
+        print('\rBatch {} of {}'.format(i + 1, len(loader)), end='')
+    
+    del mtcnn
+    torch.cuda.empty_cache()
+
 def train_epoch(tr_loader, resnet, device, loss_fn, optimizer, scheduler):
     loss = 0
     for i_batch, (anchor, pos, neg) in enumerate(tr_loader):
@@ -50,14 +85,16 @@ def val_epoch(val_loader, resnet, device, loss_fn, optimizer, scheduler):
     return loss
 
 if __name__ == "__main__":
-    data_dir = 'lfw_complete\lfw_cropped'
+    data_dir = 'mixed_face_dataset_subset'
 
-    batch_size = 32
-    epochs = 20
+    batch_size = 20
+    epochs = 100
     workers = 0 if os.name == 'nt' else 8
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     print('Running on device: {}'.format(device))
+
+    # crop_images(data_dir, batch_size, device, workers)
 
     resnet = InceptionResnetV1(
         classify=False,
@@ -98,7 +135,7 @@ if __name__ == "__main__":
     for epoch in range(epochs):
         print('\nEpoch {}/{}'.format(epoch + 1, epochs))
         print('-' * 10)
-        PATH = 'saved_models/lfw_checkpoint_' + str(epoch)
+        PATH = 'saved_models/mixed_checkpoint_' + str(epoch)
         resnet.train()
         train_loss_epoch = train_epoch(train_loader, resnet, device, loss_fn, optimizer, scheduler)
         train_loss.append(train_loss_epoch)
@@ -116,7 +153,7 @@ if __name__ == "__main__":
             }, PATH)
     print(train_loss)
     print(test_loss)
-    PATH = "saved_models/lfw_mask_triplet"
+    PATH = "saved_models/mixed_mask_triplet"
     torch.save(resnet.state_dict(), PATH)
 
-    
+  

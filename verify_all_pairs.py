@@ -196,8 +196,8 @@ def run_test(directory, batch_size, device, epochs, workers, saved_model, datase
         model_name = "Transfer Learning Model on LFW"
     elif saved_model == "saved_models/AFDB_subset_non_triplet":
         model_name = "Transfer Learning Model on Real World Masked"
-    elif saved_model == "saved_models/AFDB_subset_triplet":
-        model_name = "Transfer Learning Model on Real World Masked with Triplet"
+    elif saved_model == "saved_models/mixed_mask_triplet":
+        model_name = "Transfer Learning Model on Real World Masked"
     plt.plot(recall_list, precision_list, 'r')
     plt.xlabel("Recall")
     plt.ylabel("Precision")
@@ -231,9 +231,11 @@ if __name__ == "__main__":
         fixed_image_standardization
     ])
     orig_dataset = datasets.ImageFolder(directory, transform = trans)
+    
     dataset = TripletImageLoader(orig_dataset, train = False)
-    run_test(directory, batch_size, device, epochs, workers, "", dataset)
-    run_test(directory, batch_size, device, epochs, workers, "saved_models/lfw_mask_triplet", dataset)
-    run_test(directory, batch_size, device, epochs, workers, "saved_models/AFDB_subset_non_triplet", dataset)
-    run_test(directory, batch_size, device, epochs, workers, "saved_models/AFDB_subset_triplet", dataset)
+    print(dataset[0])
+    run_test(directory, batch_size, device, epochs, workers, "saved_models/mixed_mask_triplet", dataset)
+    # run_test(directory, batch_size, device, epochs, workers, "saved_models/lfw_mask_triplet", dataset)
+    # run_test(directory, batch_size, device, epochs, workers, "saved_models/AFDB_subset_non_triplet", dataset)
+    # run_test(directory, batch_size, device, epochs, workers, "saved_models/AFDB_subset_triplet", dataset)
     
